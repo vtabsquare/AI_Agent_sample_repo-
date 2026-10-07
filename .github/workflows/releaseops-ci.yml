@@ -1,0 +1,25 @@
+name: ReleaseOps CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_plan:
+        description: 'JSON array of tests to run'
+        required: true
+        default: '["all"]'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Run tests
+        run: |
+          pytest test_calculator.py
