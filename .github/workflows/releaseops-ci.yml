@@ -53,8 +53,10 @@ jobs:
           if [ "$CODE_TYPE" = "python" ]; then
             python -m pip install -r requirements.txt pytest
           fi
-          npm ci
-          npx --no-install playwright install --with-deps chromium
+          if [ -f "package.json" ]; then
+            npm ci
+            npx --no-install playwright install --with-deps chromium
+          fi
       - name: Execute actual tests and capture evidence
         env:
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
