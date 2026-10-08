@@ -1,25 +1,83 @@
-name: ReleaseOps CI
-
+# Copy to YOUR TARGET REPOSITORY: .github/workflows/releaseops-ci.yml
+name: ReleaseOps tests
+run-name: ${{ inputs.session_id }} / ${{ inputs.phase }}
 on:
   workflow_dispatch:
     inputs:
-      test_plan:
-        description: 'JSON array of tests to run'
+      candidate_sha:
         required: true
-        default: '["all"]'
-
+        type: string
+      session_id:
+        required: true
+        type: string
+      phase:
+        required: true
+        type: choice
+        options: [unit, dev_ui, prod_ui]
+      code_type:
+        required: true
+        type: choice
+        options: [python, javascript]
+      target_url:
+        required: false
+        type: string
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Checkout workflow tools from dispatch branch
+        uses: actions/checkout@v4
         with:
-          python-version: '3.11'
-      - name: Install dependencies
+          path: trusted-tools
+          persist-credentials: false
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install project test dependencies
+        working-directory: candidate
+        env:
+          CODE_TYPE: ${{ inputs.code_type }}
         run: |
-          pip install -r requirements.txt
-      - name: Run tests
-        run: |
-          pytest test_calculator.py
+          if [ "$CODE_TYPE" = "python" ]; then
+            python -m pip install -r requirements.txt pytest
+          fi
+          npm ci
+          npx --no-install playwright install --with-deps chromium
+      - name: Execute actual tests and capture evidence
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          SESSION_ID: ${{ inputs.session_id }}
+          TEST_PHASE: ${{ inputs.phase }}
+          CODE_TYPE: ${{ inputs.code_type }}
+          TARGET_URL: ${{ inputs.target_url }}
+        run: python trusted-tools/.github/scripts/releaseops_ci.py
+      - name: Upload evidence including failure reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: releaseops-evidence
+          path: |
+            candidate/releaseops-report.json
+            candidate/test-output.log
+          retention-days: 7
+          if-no-files-found: error
+      - name: Upload browser traces and screenshots separately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: releaseops-browser-traces
+          path: candidate/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
