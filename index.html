@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Calculator Web App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .calculator {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 300px;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        button {
+            flex: 1;
+            margin: 0 5px;
+            padding: 10px;
+            font-size: 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-top: 20px;
+            min-height: 30px;
+        }
+        .brand {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>AI Calculator</h1>
+        <input type="number" id="num1" placeholder="Enter first number">
+        <input type="number" id="num2" placeholder="Enter second number">
+        
+        <div class="buttons">
+            <button onclick="calculate('+')">+</button>
+            <button onclick="calculate('-')">-</button>
+            <button onclick="calculate('*')">×</button>
+            <button onclick="calculate('/')">÷</button>
+        </div>
+        
+        <div id="result"></div>
+        <div class="brand">Powered by ReleaseOps</div>
+    </div>
+
+    <script>
+        function calculate(operator) {
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const resultDiv = document.getElementById('result');
+
+            if (isNaN(num1) || isNaN(num2)) {
+                resultDiv.textContent = 'Enter valid numbers!';
+                resultDiv.style.color = '#e74c3c';
+                return;
+            }
+
+            let result = 0;
+            switch(operator) {
+                case '+': result = num1 + num2; break;
+                case '-': result = num1 - num2; break;
+                case '*': result = num1 * num2; break;
+                case '/': 
+                    if (num2 === 0) {
+                        resultDiv.textContent = 'Cannot divide by zero!';
+                        resultDiv.style.color = '#e74c3c';
+                        return;
+                    }
+                    result = num1 / num2; 
+                    break;
+            }
+
+            resultDiv.textContent = `Result: ${result}`;
+            resultDiv.style.color = '#27ae60';
+        }
+    </script>
+</body>
+</html>
