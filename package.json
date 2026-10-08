@@ -1,0 +1,7 @@
+{
+  "name": "ai_agent_sample_repo",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@playwright/test": "^1.42.1"
+  }
+}
